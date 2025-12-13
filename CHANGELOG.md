@@ -9,6 +9,7 @@ CHANGELOG
  * Allow passing any iterable as `$providers` list to `ExpressionLanguage` constructor
  * Add support for `<<`, `>>`, and `~` bitwise operators
  * Add support for logical `xor` operator
+ * Add support for null-safe array access syntax (`foo?.[0]`)
 
 7.1
 ---
