@@ -421,6 +421,61 @@ class ExpressionLanguageTest extends TestCase
     }
 
     /**
+     * @dataProvider provideUndefinedArrayAccess
+     */
+    public function testUndefinedArrayAccessEvaluate($expression, $values)
+    {
+        $expressionLanguage = new ExpressionLanguage();
+
+        $this->expectException(\ErrorException::class);
+
+        set_error_handler(static function (int $errno, string $errstr, ?string $errfile = null, ?int $errline = null): bool {
+            if ($errno & (\E_WARNING | \E_NOTICE | \E_USER_WARNING | \E_USER_NOTICE)) {
+                throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+            }
+
+            return false;
+        });
+
+        try {
+            $expressionLanguage->evaluate($expression, $values);
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    /**
+     * @dataProvider provideUndefinedArrayAccess
+     */
+    public function testUndefinedArrayAccessCompile($expression, $values)
+    {
+        $expressionLanguage = new ExpressionLanguage();
+
+        $this->expectException(\ErrorException::class);
+
+        set_error_handler(static function (int $errno, string $errstr, ?string $errfile = null, ?int $errline = null): bool {
+            if ($errno & (\E_WARNING | \E_NOTICE | \E_USER_WARNING | \E_USER_NOTICE)) {
+                throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+            }
+
+            return false;
+        });
+
+        try {
+            extract($values, \EXTR_SKIP);
+            eval(\sprintf('return %s;', $expressionLanguage->compile($expression, array_keys($values))));
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    public static function provideUndefinedArrayAccess()
+    {
+        yield ['foo[0]', ['foo' => []]];
+        yield ['foo[0].bar', ['foo' => []]];
+    }
+
+    /**
      * @dataProvider provideNullCoalescing
      */
     public function testNullCoalescingEvaluate($expression, $foo)
